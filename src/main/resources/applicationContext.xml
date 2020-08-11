@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                          http://www.springframework.org/schema/beans/spring-beans.xsd
+                          http://www.springframework.org/schema/tx
+                          http://www.springframework.org/schema/tx/spring-tx.xsd
+                          http://www.springframework.org/schema/context
+                          http://www.springframework.org/schema/context/spring-context.xsd
+                          http://www.springframework.org/schema/task
+                          http://www.springframework.org/schema/task/spring-task.xsd
+                          http://www.springframework.org/schema/aop
+                          http://www.springframework.org/schema/aop/spring-aop.xsd
+                          http://www.springframework.org/schema/cache
+                          http://www.springframework.org/schema/cache/spring-cache.xsd">
+    <!--将配置文件中的值解析为KV键值对-->
+    <!-- <bean id="propertyConfig" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" >
+        <property name="location" value="classpath:properties/jdbc.properties"></property>
+         <property name="fileEncoding" value="utf-8"></property>
+    </bean>-->
+
+    <!--开启支持异步-->
+    <!--<task:annotation-driven executor="myExecutor" scheduler="poolTaskScheduler" />
+    <task:executor id="myExecutor" pool-size="2" ></task:executor>
+    <task:executor id="logExecutor" pool-size="2" ></task:executor>
+    <task:scheduler id="poolTaskScheduler" pool-size="1"/>-->
+    <!--组件扫描注解-->
+    <context:component-scan base-package="com.wu.config"></context:component-scan>
+    <context:component-scan base-package="com.wu.schedule"></context:component-scan>
+    <context:component-scan base-package="com.wu.service"></context:component-scan>
+    <context:component-scan base-package="com.wu.util"></context:component-scan>
+    <context:component-scan base-package="com.wu.listener"></context:component-scan>
+    <context:component-scan base-package="com.wu.swagger"></context:component-scan>
+    <context:component-scan base-package="com.wu.asy" >
+        <!--use-default-filters="false" 只扫描当前包，子包不扫描-->
+        <!--扫描指定的类路径-->
+        <!--<context:include-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller" />-->
+
+    </context:component-scan>
+    <context:component-scan base-package="com.wu.aop"></context:component-scan>
+    <!--配置文件解析成 KV键值对-->
+    <context:property-placeholder file-encoding="utf-8" ignore-unresolvable="true" location="classpath:properties/jdbc.properties"></context:property-placeholder>
+    <!--配置mysql连接池数据源   DruidAbstractDataSource 配置参数-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.pass}"></property>
+        <property name="maxActive" value="${jdbc.maxActive}"></property>
+        <property name="maxWait" value="${jdbc.maxWait}"></property>
+        <property name="minIdle" value="${jdbc.minIdle}"></property>
+        <property name="initialSize" value="${jdbc.initialSize}"></property>
+    </bean>
+
+    <bean id="user" class="com.wu.po.User">
+        <property name="name" value="zhangsan"></property>
+    </bean>
+    <!--整合spring mybaties-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--设置数据库连接池-->
+        <property name="dataSource" ref="dataSource"></property>
+        <!--配置映射文件路径-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+        <!--配置mybatis 全局配置文件-->
+        <property name="configLocation" value="classpath:spring-mybaties.xml"></property>
+        <!--扫描包 xml中parameterType就可以使用类名，不用全路径-->
+        <property name="typeAliasesPackage" value="com.wu.sql.model"></property>
+    </bean>
+    <!--接口类文件和xml文件映射-->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.wu.sql.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+    <!--配置事务管理器-->
+    <bean  id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--配置注解驱动事务管理器对象-->
+    <tx:annotation-driven transaction-manager="dataSourceTransactionManager"></tx:annotation-driven>
+
+    <!--<bean class="com.wu.aop.SelfLog4j" id="selfLog4j"></bean>-->
+    <!--切面 aop-->
+    <aop:config>
+        <!--切点-->
+        <aop:pointcut id="point" expression="execution(public * com.wu.aop.Book.*Aop(..))"/>
+        <!--配置切面-->
+        <aop:aspect  ref="selfLog4j">
+            <aop:before method="before" pointcut-ref="point"></aop:before>
+            <aop:after method="after" pointcut-ref="point"></aop:after>
+            <aop:around method="around" pointcut-ref="point"></aop:around>
+
+         </aop:aspect>
+    </aop:config>
+    <!--自动为@Aspect注解标记的类自动生成代理类-->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+
+
+    <!--开启缓存-->
+    <cache:annotation-driven cache-manager="cacheManager"></cache:annotation-driven>
+
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="cacheManagerFactory"></property>
+    </bean>
+
+    <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"></property>
+    </bean>
+</beans>

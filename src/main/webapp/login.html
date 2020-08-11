@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="js/jquery/jquery-3.5.0.min.js" charset="utf-8"></script>
+    <script src="js/a.js"></script>
+</head>
+<body>
+    account:<input id="username"/><br/>
+    password:<input id="password" type="password"/><br/>
+    <button onclick="submit()">提交</button>
+</body>
+<script>
+    function submit(){
+        var account = $("#username").val();
+        var password = $("#password").val();
+        var params = {"account":account,"password":password};
+        $.ajax({
+            url: "/login",
+            type: "POST",
+            contentType:"application/json;charset=utf-8",
+            data: JSON.stringify(params),
+            dataType:'json',
+            async: true,
+            success: function (data) {
+                if(data.result){
+                    var curDate = new Date();
+                    var expiresDate =  curDate.getTime()+60*1000*60 //设置cookie过期时间为两分钟
+                    curDate.setTime(expiresDate);
+                    document.cookie = "token="+account+";expires="+curDate.toGMTString();
+                    alert("登录成功");
+                    location.href = "/home";
+                }else{
+                   alert("登录失败");
+                }
+
+            },
+            error: function () {
+                alert("服务器出错!");
+            }
+        })
+    }
+</script>
+</html>

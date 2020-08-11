@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .outer{
+            width:300px;
+            height:500px;
+            border:1px solid red;
+           /* position:relative;*/
+        }
+        .center {
+            /*position: absolute;
+            margin: auto;
+            top:0px; bottom:0px; left:0px; right:0px;*/
+            width: 100px; height: 100px;
+            border:1px solid red;
+        }
+        .center-inner {
+            display: table;
+            height: 100%; width: 100%;
+        }
+        .center button {
+            display: table-cell;
+            text-align:center; vertical-align:middle;
+        }
+        .upload-footer{
+            height: 500px;
+            display: table;
+        }
+        .upload-footer .self-btn-group{
+            /* height: 100%;*/
+            display: table-cell;
+            vertical-align: middle;
+        }
+        /*.self-btn-group{
+            !* height: 100%;*!
+            display: table;
+        }
+        .upload-footer button{
+            display: table-cell;
+            vertical-align: middle;
+        }*/
+
+    </style>
+
+</head>
+<body>
+
+<div class="upload-footer">
+    <div class="self-btn-group">
+        <button type="submit">OK测试</button>
+        <button type="button">Cancel</button>
+        <input type="button" value="<a href='#'>sad</a>">
+    </div>
+
+</div>
+
+
+<div class="outer">
+    <div class="center">
+        <div class="center-inner">
+            <button>居中</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

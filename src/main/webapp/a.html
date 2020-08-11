@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        /*设置parent class 字体默认样式*/
+        .basicNameConfig {
+            margin-top: 1%;
+            margin-left: 2%;
+            margin-right: 2%;
+            font-family: helvetica, arial, sans-serif, Segoe UI, tahoma, Windchill;
+            font-size: 11px;
+            font-style: normal;
+            font-weight: normal;
+            color: #464646;
+        }
+
+        .basicNameConfig select {
+            width: 204px;
+            height: 20px;
+            line-height: normal;
+            padding: 0;
+            font-size: 100%;
+            text-align: left;
+        }
+
+
+        /*<button>,<input type=button>默认样式*/
+        .basicNameConfig button, input[type=button] {
+            background-color: #D9D9D6;
+            background-image: none;
+            color: black;
+            border: 1px solid #959793;
+            border-radius: 3px;
+            height: 24px;
+            line-height: 0px;
+        }
+
+        .basicNameConfig fieldset {
+            border: 1px solid #c0c0c0;
+            margin: 0 2px;
+            padding: 0.35em 0.625em 0.75em;
+            border-radius: 5px;
+        }
+
+        .basicNameConfig fieldset legend {
+            border: 0;
+            padding: 0;
+            font-weight: bold;
+        }
+
+        .basicNameConfig input[type="text"][disabled] {
+            color: #aaa;
+        }
+
+        /*====================================*/
+        .basicNameConfig .leftDiv {
+            float: left;
+            font-weight: bold;
+            width: 10%;
+        }
+
+        .basicNameConfig .rightDiv {
+            float: left;
+            width: 85%;
+        }
+
+        .basicNameConfig .lcfc-file-input-widget {
+            position: relative;
+            display: inline-block;
+            height: 2em;
+            width: 300px;
+        }
+
+        .basicNameConfig .lcfc-file-input-text {
+            width: 200px;
+        }
+
+        .basicNameConfig .lcfc-file-input-mask {
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            color: #30AFFF;
+            border-radius: 3px;
+            border: 2px dashed #30AFFF;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        input {
+            font-size: 100%;
+            font-family: inherit;
+            font-weight: inherit;
+        }
+
+
+
+
+    </style>
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<div class="basicNameConfig">
+    <fieldset>
+        <legend>导入设置</legend>
+        <br>
+        <div>
+            <div class="leftDiv">File Type:</div>
+            <div class="rightDiv">
+                <select>
+                    <option value="PickExistingObject">Dummy，俄欧</option>
+                    <option value="NewIteration">Phantom</option>
+                </select>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div>
+            <div class="leftDiv">File:</div>
+            <div class="rightDiv">
+                <div class="lcfc-file-input-widget">
+                    <div>
+                        <div style="display:inline-block; position:relative;">
+                            <input type="file" style="display: none">
+                            <input class="lcfc-file-input-text" type="text" disabled placeholder="FileName">
+                            <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                            <input type="button" style="position: absolute;height: 17px;" value="Select File" onclick="triggerUploadFile(this)">
+                        </div>
+
+                    </div>
+                    <div class="lcfc-file-input-mask">李四改写键多少aaaaaa</div>
+                    <div class="lcfc-file-input-mask">张三改写了此文件..bbbbbb</div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+    </fieldset>
+</div>
+
+</body>
+<script>
+   function triggerUploadFile(that) {
+       $(that).parent().find("input[type=file]").trigger('click');
+   }
+</script>
+</html>

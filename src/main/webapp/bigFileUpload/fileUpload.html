@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery/jquery-3.5.0.min.js"></script>
+    <script type="text/javascript" src="../js/md5/md5.js"></script>
+</head>
+<body>
+    <input type="file" id="file">
+<button onclick="uploadFile()">上传</button>
+</body>
+    <script type="text/javascript">
+        function uploadFile(){
+            var file = $("#file")[0].files[0];
+            if(file==undefined){
+                alert("未选择文件");
+                return;
+            }
+
+            checkIfUploaded(file);
+        }
+
+
+
+    function checkIfUploaded (file) {
+
+        var reader = new FileReader();
+        //用来计算fileMd5值的file内容
+        var fileToCountMD5=file;
+
+        if(file.size>1024*1024*2){
+            var fileStart=file.slice(0,1024*1024);
+            var fileEnd=file.slice(file.size-1024*1024,file.size);
+            fileToCountMD5 = new Blob([fileStart,fileEnd], { type: "text/plain" });
+        }
+        reader.readAsBinaryString(fileToCountMD5);
+        reader.onload = function() {
+            //需要引入计算MD5的jar包
+            var fileMd5 = hex_md5(reader.result);
+
+            var form = new FormData();
+            form.append("fileMd5", fileMd5);
+            form.append("videoSize", file.size);
+            //校验是否上传过该文件，返回上传进度
+            $.ajax({
+                url: "/isFileExist",
+
+                type: "POST",
+
+                data: form,
+
+                async: true,        //异步
+
+                processData: false,  //很重要，告诉jquery不要对form进行处理
+
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+
+                success: function (data) {
+                    if (data.success) {//视频已上传
+                        alert("上传成功！");
+                    } else {//视频未上传或者部分上传
+                        uploadBySplit(file, fileMd5, 0);
+                    }
+                },
+                error: function () {
+                    alert("服务器出错!");
+                }
+            });
+        }
+    }
+    //分片上传
+    function uploadBySplit(file,fileMd5,i){
+        var splitSize=1024*1024;//分片大小20M
+        var size=file.size;//总大小
+        var splitCount = Math.ceil(size / splitSize);  //总片数
+
+        if(i==splitCount){
+            alert("上传成功！");
+            return;
+        }
+
+        //计算每一片的起始与结束位置
+        var start = i * splitSize;
+        var end = Math.min(size, start + splitSize);
+        var fileData=file.slice(start,end);
+        var reader = new FileReader();
+        reader.readAsBinaryString(fileData);
+        reader.onload=function(){
+            var md5 = hex_md5(reader.result);
+            var form = new FormData();
+            form.append("fileMd5", fileMd5);
+            form.append("size", size);//总大小
+            form.append("total", splitCount);//总片数
+            form.append("index", i);//当前是第几片
+            form.append("md5", md5);//分片md5
+            form.append("originFileName",file.name);
+            //判断分片是否上传
+            $.ajax({
+                url: "/isFileSplitExist",
+                type: "POST",
+                data: form,
+                async: true,        //异步
+                processData: false,  //很重要，告诉jquery不要对form进行处理
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                success: function(data){
+                    if(data=="1"){//已上传
+                        //上传进度
+                        var process=Math.round(end/size*100)+"%";
+
+                        i++;
+                        uploadBySplit(file,fileMd5,i);
+                    }else{//未上传
+                        form.append("fileData", fileData);
+                        //上传分片
+                        $.ajax({
+                            url: "/upload",
+
+                            type: "POST",
+
+                            data: form,
+
+                            async: true,        //异步
+
+                            processData: false,  //很重要，告诉jquery不要对form进行处理
+
+                            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+
+                            success: function(data){
+                                if(data=="1"){
+                                    //上传进度
+                                    var process=Math.round(end/size*100)+"%";
+
+                                    i++;
+                                    uploadBySplit(file,fileMd5,i);
+                                }else{
+                                    alert("分片上传失败");
+                                }
+
+                            },
+                            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                                alert("服务器出错!");
+                            }
+
+                        });
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert("服务器出错!");
+                }
+            });
+        }
+
+    }
+</script>
+
+</html>

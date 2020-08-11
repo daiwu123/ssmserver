@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery/jquery-3.5.0.min.js"></script>
+    <script type="text/javascript" src="../js/md5/md5.js"></script>
+</head>
+<body>
+<input type="file" id="file"/>
+<button onclick="upload()">上传一份</button>
+<button onclick="test()">test</button>
+</body>
+<script>
+    function test(){
+        var h = "helloword";
+        h = h.slice(1,5);
+        console.log(h);
+    }
+    var slicebit = 1024 * 1024; //1Mb
+    var count = 0;
+    var file;
+    var fileSize;
+    function upload() {
+        //获取文件
+        file = document.getElementById("file").files[0];
+        //获取文件总数
+        fileSize = file.size;
+        //计算总片数 3
+        count = Math.ceil(fileSize / slicebit);
+
+        myAjax(0);
+
+    }
+    function myAjax(i){
+        var tBlob;
+        if(i==count-1){
+            tBlob = file.slice(i * slicebit,fileSize+1);
+        }else {
+            tBlob = file.slice(i * slicebit, (i + 1) * slicebit);
+        }
+        var formData = new FormData();
+        formData.append("count",count);
+        formData.append("index",i);
+        formData.append("blob",tBlob);
+        formData.append("fileName",file.name);
+        $.ajax({
+            url: "/uploadfile",
+
+            type: "POST",
+
+            data: formData,
+
+            async: true,        //异步
+
+            processData: false,  //很重要，告诉jquery不要对form进行处理
+
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+
+            success: function (data) {
+                i++;
+                if(i<count){
+                    myAjax(i);
+                }
+
+            },
+            error: function () {
+                alert("服务器出错!");
+            }
+        });
+    }
+
+</script>
+</html>

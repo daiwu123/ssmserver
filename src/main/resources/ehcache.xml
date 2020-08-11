@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="xsd/ehcache.xsd">
+    <!--ehcache缓存的数据文件地址，-->
+    <diskStore path="D:/ehcache"></diskStore>
+    <!--<diskStore path="/wu.dai.o/tomcat/ehcache"></diskStore>-->
+    <defaultCache
+        maxElementsInMemory="10"
+        eternal="false"
+        overflowToDisk="true"
+        timeToIdleSeconds="5"
+        timeToLiveSeconds="5"
+        diskPersistent="false"
+        diskExpiryThreadIntervalSeconds="120">
+    </defaultCache>
+
+    <cache name="cacheTest"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="true"
+           timeToIdleSeconds="100"
+           timeToLiveSeconds="200"/>
+</ehcache>

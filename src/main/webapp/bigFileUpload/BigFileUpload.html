@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery/jquery-3.5.0.min.js"></script>
+    <script type="text/javascript" src="../js/md5/md5.js"></script>
+</head>
+<body>
+    <input type="file" id="file"/><button onclick="upload()">上传</button>
+</body>
+<script>
+    var fileData;
+    //文件大小
+    let fileSize;
+
+    let fileName;
+    //分片大小
+    let blobSize = 1024*1024*50; //50M
+    //一共可以分成多少片
+    let total;
+
+    let startTime;
+    function upload(){
+        var startDate = new Date();
+        startTime = startDate.getTime();
+        var file =document.getElementById("file").files[0];
+        fileData  = file;
+        fileName = file.name;
+        fileSize = file.size;
+        total = Math.ceil(fileSize/blobSize);
+        var fileReader = new FileReader();
+        var blob1 = fileData.slice(0,1024*1024);
+        var blob2 = fileData.slice(fileData.size-1024*1024,fileData.size);
+        var blobObj = new Blob([blob1,blob2],{type:"text/plain"});
+        fileReader.readAsBinaryString(blobObj);
+        fileReader.onload = function(){
+            //得到文件通过MD5解析之后的字符串
+            var md5_title = hex_md5(fileReader.result);
+            var params = {"md5dirname":md5_title,"originName":fileName,"size":fileSize};
+            //检查这个MD5加密的字符串是否在目标路径已经存在，从而判断是否已经上传过
+            $.ajax({
+                url: "/isFirstUpload",
+                type: "POST",
+                data: params,
+                async: true,
+                success: function (data) {
+                    if (data == "1") {//视频已上传
+                        alert("上传成功！");
+                    } else {//视频未上传或者部分上传
+                        uploadFile(md5_title,0);
+                    }
+                },
+                error: function () {
+                    alert("服务器出错!");
+                }
+            })
+        }
+    }
+
+    function uploadFile(fileMD5Name,index){
+        var reader = new FileReader();
+        var sheetBlob;
+        var blobtr;
+        if(index!=total-1) {
+            sheetBlob =  fileData.slice(index * blobSize, (index + 1) * blobSize);
+            var sheetBlobstr1 = sheetBlob.slice(0,1024);
+            var sheetBlobstr2 =sheetBlob.slice(sheetBlob.size-1024,sheetBlob.size);
+            blobtr = new Blob([sheetBlobstr1,sheetBlobstr2],{type:"text/plain"});
+        }else{
+            sheetBlob = fileData.slice(index * blobSize,fileSize+1);
+            var sheetBlobstr1;
+            var sheetBlobstr2;
+            if(sheetBlob.size>1024){
+                 sheetBlobstr1 = sheetBlob.slice(0,1024);
+                 sheetBlobstr2 =sheetBlob.slice(sheetBlob.size-1024,sheetBlob.size);
+                blobtr = new Blob([sheetBlobstr1,sheetBlobstr2],{type:"text/plain"});
+            }else{
+                blobtr = sheetBlob;
+            }
+        }
+        reader.readAsBinaryString(blobtr);
+        reader.onload = function(){
+            var curBolbMD5Name =  hex_md5(reader.result);
+            var formDataBlob  = new FormData();
+            formDataBlob.append("fileMD5Name",fileMD5Name);
+            formDataBlob.append("fileData",sheetBlob);
+            formDataBlob.append("index",index);
+            formDataBlob.append("curBolbMD5Name",curBolbMD5Name);
+            formDataBlob.append("total",total);
+            formDataBlob.append("originFileName",fileName);
+            $.ajax({
+                url: "/cru_upload",
+                type: "POST",
+                data: formDataBlob,
+                async: true,
+                processData:false,
+                contentType:false,
+                success: function () {
+                    index++;
+                    if(index<total) {
+                        uploadFile(fileMD5Name,index);
+                    }else{
+                        var endTime = new Date();
+                        var endT = endTime.getTime();
+                        var diffTime =  endT - startTime;
+                        var day = Math.floor(diffTime / (24 * 3600 * 1000));
+                        var backOne=diffTime %(24*3600*1000);
+
+                        var hours=Math.floor(backOne/(3600*1000));//计算出小时数
+
+                        var backTwo=backOne%(3600*1000);
+
+                        var min=Math.floor(backTwo/(60*1000));
+
+                        var backThree=backTwo%(60*1000);
+
+                        var backFouck=Math.round(backThree/1000);
+                        alert("day>>"+day+">>hours>>"+hours+">>min>>"+min+">>backFouck>>"+backFouck);
+                    }
+                },
+                error: function () {
+                    alert("服务器出错!");
+                }
+            })
+        }
+
+    }
+</script>
+</html>

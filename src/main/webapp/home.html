@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery/jquery-3.5.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+<h1>主页面..</h1>
+<button onclick="meetingFunction()">进入会议模式</button>
+<button onclick="qFunction()">退出会议模式</button>
+</body>
+<script>
+    function meetingFunction(){
+        $.ajax({
+            url:"/meeting",
+            type:"GET",
+            success:function(data){
+                alert("进入会议模式")
+            },
+            error:function(er){
+                alert("异常");
+            }
+        })
+    }
+    function qFunction(){
+        $.ajax({
+            url:"/exitMeeting",
+            type:"GET",
+            success:function(data){
+                alert("进入会议模式")
+            },
+            error:function(er){
+                alert("异常");
+            }
+        })
+    }
+</script>
+</html>
